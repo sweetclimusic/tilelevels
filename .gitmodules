@@ -1,0 +1,3 @@
+[submodule "git-dir-cleaner-for-unity3d"]
+	path = git-dir-cleaner-for-unity3d
+	url = git@github.com:strich/git-dir-cleaner-for-unity3d.git
