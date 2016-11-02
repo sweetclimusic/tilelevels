@@ -30,7 +30,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 		bool m_Crouching;
 
 
-		void Start()
+		void Awake()
 		{
 			m_Animator = GetComponent<Animator>();
 			m_Rigidbody = GetComponent<Rigidbody>();
@@ -220,6 +220,16 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 				m_GroundNormal = Vector3.up;
 				m_Animator.applyRootMotion = false;
 			}
+		}
+
+		public bool IsGrounded{
+			set{
+				m_IsGrounded = value;
+			}
+			get{
+				return m_IsGrounded;
+			}
+			
 		}
 	}
 }

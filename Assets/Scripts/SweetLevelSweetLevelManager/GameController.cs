@@ -58,6 +58,7 @@ namespace SweetLevelManager
 		/// Detects the player object
 		/// </summary>
 		void Awake(){
+			GameObject prefabulous;
 			//this is just a test generating a prefab, 
 			//well finding a prefab as we don't use instaniate here
 			if(player == null){
@@ -66,6 +67,18 @@ namespace SweetLevelManager
 			}
 			if(orb == null){
 				orb =  Resources.Load("Collectible", typeof(GameObject)) as GameObject;
+			}
+			if (wall == null) {
+				prefabulous = Resources.Load ("Wall", typeof(GameObject)) as GameObject;
+				wall = prefabulous.transform;
+			}
+			if (ground == null) {
+				prefabulous = Resources.Load ("Ground", typeof(GameObject)) as GameObject;
+				ground = prefabulous.transform;
+			}
+			if (goal == null) {
+				prefabulous = Resources.Load ("Goal", typeof(GameObject)) as GameObject;
+				goal = prefabulous.transform;
 			}
 			//Check _instance and make it a singleton
 				_instance = this;
@@ -76,9 +89,10 @@ namespace SweetLevelManager
 			if(levelAxis.ToLower() != "y"){
 				buildFloor = true;
 			}
+			//TODO transfrom this into a delegate list
 			component = new Transform[16];
 			component[0] = ground;
-			component[1] = wall;
+			component[1] = wall; //when slopes add, name tags need to be updated.
 			component[2] = player.transform;
 			component[3] = orb.transform;
 			component[4] = goal;
@@ -145,7 +159,6 @@ namespace SweetLevelManager
 
 		public void OrbCollected(){
 			orbsCollected++;
-			Debug.Log("point");
 			//win state reach, show goal particle to player.
 			if(orbsCollected >= orbsTotal){
 				goalPS.Play();

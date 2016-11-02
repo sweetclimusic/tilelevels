@@ -5,8 +5,8 @@ namespace SweetLevelManager
         //part of the splunky RoomGenerator
         int[] roomTypes = new int[]{0,1,2,3};
         int[] roomSolutionPath = new int[]{1,2,3,4,5};
-        int[][] level = new int[18][24]; 
-        int[][] room = new int[6][8];
+        int[][] level = new int[18][]; //18X24
+        int[][] room = new int[6][]; //6X8
 
         //roomTypes
         /*

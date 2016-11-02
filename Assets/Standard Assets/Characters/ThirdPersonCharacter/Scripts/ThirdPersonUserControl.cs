@@ -71,5 +71,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Character.Move(m_Move, crouch, m_Jump);
             m_Jump = false;
         }
+
+        //Added by me as there aren't many public methods..
+        public bool getJump(){
+            return m_Jump;
+        }
+        public Vector3 getMove(){
+            return m_Move;
+        }
     }
 }

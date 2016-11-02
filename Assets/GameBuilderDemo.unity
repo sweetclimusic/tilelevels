@@ -500,11 +500,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scoreTxt: {fileID: 533066174}
   dynamicObjects: {fileID: 1926862814}
-  wall: {fileID: 4000012082232818, guid: e2e913e9e857446dcb45b445a3323709, type: 2}
-  ground: {fileID: 4000012082232818, guid: 3c12dff6ed7f0422eb7492bfb395de44, type: 2}
-  orb: {fileID: 1000013272306822, guid: d47f78c7131114e7a9e74a902bac6499, type: 2}
+  wall: {fileID: 0}
+  ground: {fileID: 0}
+  orb: {fileID: 0}
   player: {fileID: 0}
-  goal: {fileID: 4000013974267438, guid: 5a02dbbfcd7c34aac8aac2a53c713bdc, type: 2}
+  goal: {fileID: 0}
   component: []
   levelAxis: y
 --- !u!1 &1926862814
