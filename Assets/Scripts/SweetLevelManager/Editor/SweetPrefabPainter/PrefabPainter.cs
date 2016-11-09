@@ -2,44 +2,41 @@
 using UnityEditor;
 using System.Collections;
 
-namespace SweetPrefabPainter
-{
+namespace SweetPrefabPainter {
 	//Does all the drawing to the scene view.
 	public class PrefabPainter : Editor {
-		public static PrefabPainter _instance;
-		public Sprite mouseCurser;
-		public ParticleSystem cursor;
+		//as we have public methods, make variables public.
+		public static PrefabPainter _prefabPainterInstance;
+		public static Sprite _pointer;
+		public static GameObject _cursor;
 
-		public SelectedTool {
-			get{
-				EditorPrefer.GetString(value);
-			}
-			set{
-				switch (value)
-				{
-					// on choice of button choosen set it as opposite.
-					case "End":
-					case "Paint":
-					EditorPrefer.SetBool("SweetPrefabPainting", 
-						!EditorPrefer.GetBool("SweetPrefabPainting")
-					)
-					EditorPrefer.SetBool("SweetPrefabPaintingEnd",!EditorPrefer.GetBool("SweetPrefabPaintingEnd"));
-					default:
-				}
+		static bool repaint = false;
+
+		public static bool RepaintPrefabPainter {
+			get {
+				return repaint;
+			}set {
+				repaint = value;
 			}
 		}
 
 		[MenuItem ("SweetPrefabPainter/PrefabPainterBrush")]
 		private static void CreatePrefabPainterBrush(){
-			//mouseCurser = new Sprite();
-			mouseCurser = EditorGUIUtility.Load("cursor_pointerFlat.png") as Sprite;
-			EditorPrefer.SetBool("SweetPrefabPainting",true);
-			EditorPrefer.SetBool("SweetPrefabPaintingEnd",false);
+			if (_prefabPainterInstance == null) {
+				//seems Editor is a scriptable object, must create a instance of it and not just
+				//use new keyword.
+				_prefabPainterInstance = CreateInstance<PrefabPainter>();
+			}
+			_pointer = EditorGUIUtility.Load("cursor_pointerFlat.png") as Sprite;
+			_cursor = EditorGUIUtility.Load("cursor_pointerFlat.png") as GameObject;
+
+			PrefabPainterModel.SelectedTool = 2;
+
 		}
 		/// <summary>
-		/// This function is called when the object becomes enabled and active.
+		/// Constructor
 		/// </summary>
-		void OnEnable()
+		static PrefabPainter()
 		{
 			SceneView.onSceneGUIDelegate -= OnSceneGUI;
 			SceneView.onSceneGUIDelegate += OnSceneGUI;
@@ -50,11 +47,21 @@ namespace SweetPrefabPainter
 		/// <summary>
 		/// This function is called when the behaviour becomes disabled or inactive.
 		/// </summary>
-		void OnDisable()
+		void OnDestroy()
 		{
 			//deregister delegate.
 			SceneView.onSceneGUIDelegate -= OnSceneGUI;
 			EditorApplication.update -= DrawCursorOnScene;
+		}
+
+		static void OnSceneGUI( SceneView sceneView){
+			//update position on screen
+			//check if we can use our tool
+			//draw handles tool menu
+			DrawToolsMenu(sceneView.position);
+			//draw the mouse cursor or the painter tool.
+			DrawCursorOnScene();
+
 		}
 
 		///<summary>
@@ -62,7 +69,7 @@ namespace SweetPrefabPainter
 		/// </summary>
 		static void DrawCursorOnScene(){
 			//This is the handle.
-			Handle.Color = new Color (0.3,0.3,0.3,1);
+			Handles.color = new Color (0.3f,0.3f,0.3f,1f);
 
 		}
 
@@ -70,38 +77,51 @@ namespace SweetPrefabPainter
 
 		///<summary>
 		/// draws the Menu for the PrefabPainter
+		/// params Rect position, sceneview x,y positon from onSceneGui
 		/// </summary>
-		static void DrawToolsMenu(){
-			//properties
-			float width;
-			float height
-			float count;
+		static void DrawToolsMenu(Rect position){
 
 			//Rendering loop(?) of the handle, require a EndGUI when done
-			Handle.BeginGUI();
-			GUILayout.BeginVertical("prefabpainterbox");
-			string[] labels = new string[]{"End","Paint"}
-			SelectedTool = GUILayout.SelectedGrid(
-				SelectedTool, // get current Selected...
+			Handles.BeginGUI();
+			//x,y ,width, height, 
+			GUILayout.BeginArea (new Rect(10,position.height - 200,110,180),EditorStyles.helpBox);
+			GUILayout.BeginVertical();
+			string[] labels = new string[]{"End","Paint","Delete"};
+			PrefabPainterModel.SelectedTool = GUILayout.SelectionGrid(
+				PrefabPainterModel.SelectedTool, // get current Selected...
 				labels,
-				2,
-				EditorStyle.toolbarButton,
-				GUILayout.Width(20)
+				1,
+				EditorStyles.miniButton,
+				GUILayout.Width(100)
 			);
+			//grab editorPrefs or default to 1
+			float height  = EditorPrefs.GetFloat("SweetPrefabYScale",1.0f);
+			float width = EditorPrefs.GetFloat("SweetPrefabXScale",1.0f);
+			float count = (float)EditorPrefs.GetInt("SweetPrefabCount",1); 
+
 			//spacing and sliders
 			GUILayout.Label("Scale width:");
-			width = GUILayout.HorizontalSlider(width,1.0f,10.0f);
+			width = GUILayout.HorizontalSlider(width,1.0f,10.0f,GUILayout.Width (100));
 			GUILayout.Space(5);
 			GUILayout.Label("Scale height:");
-			height = GUILayout.HorizontalSlider(height,1.0f,10.0f);
+			height = GUILayout.HorizontalSlider(height,1.0f,10.0f,GUILayout.Width (100));
 			GUILayout.Space(5);
-			count = GUILayout.HorizontalSlider(width,1.0f,10.0f);
+			GUILayout.Label("Scale count:");
+			count = GUILayout.HorizontalSlider(count,1.0f,10.0f,GUILayout.Width (100));
 			//finished layout group
 			GUILayout.EndVertical();
-			
-			Handle.EndGUI();
+			GUILayout.EndArea ();
+			Handles.EndGUI();
+			//SelectedScale a vector to record selected options in EditorPrefs
+			PrefabPainterModel.SelectedScale = new Vector3 (width, height, count);
 
-			//send the properties to the controller?
+		}
+		//repaint the scene from vector movement.
+		static void UpdateRepaint(){
+			//If the cube handle position has changed, repaint the scene
+			if( repaint ){
+				SceneView.RepaintAll();
+			}
 		}
 		
 	}
